@@ -21,7 +21,7 @@ public class PassGenClient extends JFrame implements ActionListener {
 	private TitledBorder controlsBorder, outputBorder;
 	private JMenuBar menuBar;
 	private JMenu file, about, changeSettings;
-	private JMenuItem exit, howToUse, aboutProgram, changeFilePath, changePasswordPattern, sourceCode;
+	private JMenuItem exit, howToUse, aboutProgram, changeFilePath, resetFilePath, changePasswordPattern, sourceCode;
 	
 	public PassGenClient() {
 		super( "Password Generator" );
@@ -96,6 +96,11 @@ public class PassGenClient extends JFrame implements ActionListener {
 		else if( ae.getSource() == howToUse ) {
 			HelpDialog hd = new HelpDialog( this );
 		}
+		
+		else if( ae.getSource() == resetFilePath ) {
+			this.filePath = "default";
+			saveSettings();
+		}
 	}
 	
 	/**
@@ -106,7 +111,7 @@ public class PassGenClient extends JFrame implements ActionListener {
 		jfc.setFileFilter( new FileNameExtensionFilter( "Text files", "txt" ) );
 		
 		int returnVal = jfc.showOpenDialog( this );
-    	if(returnVal == JFileChooser.APPROVE_OPTION) {
+    	if( returnVal == JFileChooser.APPROVE_OPTION ) {
             this.filePath = jfc.getSelectedFile().getPath();
 				saveSettings();
 				loadSettings();
@@ -118,7 +123,7 @@ public class PassGenClient extends JFrame implements ActionListener {
 	 */
 	private final void saveSettings() {
 		try {
-			File settingsFile = new File( "settings.ini" );
+			File settingsFile = new File( ".settings.ini" );
 			
 			if( settingsFile.exists() )
 				settingsFile.delete();
@@ -140,7 +145,7 @@ public class PassGenClient extends JFrame implements ActionListener {
 	 */
 	private final void loadSettings() {
 		try {
-			File settingsFile = new File( "settings.ini" );
+			File settingsFile = new File( ".settings.ini" );
 			
 			Scanner fileScan = new Scanner( settingsFile );
 			this.passwordPattern = fileScan.nextLine();
@@ -163,7 +168,6 @@ public class PassGenClient extends JFrame implements ActionListener {
 			
 		}
 		catch( Exception e ) {
-			JOptionPane.showMessageDialog( this, "Error loading settings file! Reverting to default!", "Error!", JOptionPane.ERROR_MESSAGE );
 			this.passwordPattern = "snsns";
 			this.pg = new PasswordGenerator();
 			this.filePath = "default";
@@ -222,14 +226,18 @@ public class PassGenClient extends JFrame implements ActionListener {
 		this.changePasswordPattern.addActionListener( this );
 		this.sourceCode = new JMenuItem( "Program source" );
 		this.sourceCode.addActionListener( this );
-		this.changeFilePath = new JMenuItem( "Change file path" );
+		this.changeFilePath = new JMenuItem( "Use custom wordlist" );
 		this.changeFilePath.addActionListener( this );
+		this.resetFilePath = new JMenuItem( "Use default wordlist" );
+		this.resetFilePath.addActionListener( this );
 		
 		//menus
 		this.changeSettings = new JMenu( "Change Settings" );
 		this.changeSettings.setIcon( new ImageIcon( getClass().getResource( "res/gear.png" ) ) );
 		this.changeSettings.add( changePasswordPattern );
+		this.changeSettings.addSeparator();
 		this.changeSettings.add( changeFilePath );
+		this.changeSettings.add( resetFilePath );
 		
 		this.file = new JMenu( "General Settings" );
 		this.file.add( changeSettings );
