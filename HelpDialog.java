@@ -3,11 +3,18 @@ import javax.swing.ImageIcon.*;
 import java.awt.FlowLayout;
 import java.awt.event.*;
 
+/**
+ * Displays basic help information about the program
+ */
 public class HelpDialog extends JDialog implements ActionListener {
 	
 	private ImageIcon howToUse;
 	private JButton okButton, viablePasswordCharacters;
 	
+	/**
+	 * Constructs the dialog
+	 * @param parent The window that this dialog will be displayed relative to
+	 */
 	public HelpDialog( JFrame parent ) {
 		super( parent, "Help", true );
 		

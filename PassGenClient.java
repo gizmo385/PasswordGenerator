@@ -11,18 +11,30 @@ import java.io.FileNotFoundException;
 import java.io.BufferedWriter;
 import java.io.FileWriter;
 
+/**
+ * The primary client for the password generator. All user action is driven by this GUI
+ * @author gizmo385
+ */
 public class PassGenClient extends JFrame implements ActionListener {
 	
-	private PasswordGenerator pg;
-	private String passwordPattern, filePath;
+	//Frame components
+	private PasswordGenerator pg = new PasswordGenerator();
 	private JTextField seedField, outputField;
 	private JButton randomSeed, generate;
 	private JPanel controls, output;
 	private TitledBorder controlsBorder, outputBorder;
 	private JMenuBar menuBar;
 	private JMenu file, about, changeSettings;
-	private JMenuItem exit, howToUse, aboutProgram, changeFilePath, resetFilePath, changePasswordPattern, sourceCode;
+	private JMenuItem exit, howToUse, aboutProgram, editSettings, sourceCode;
 	
+	//Settings
+	private String wordlistDirectoryPath, currentPasswordPattern;
+	private int currentMaxCharLimit, swapFrequency, capitalizationFrequency;
+	private boolean randomlySwappingChars, maxCharLimitFlag, randomCapitalization;
+	
+	/**
+	 * Constructs the window
+	 */
 	public PassGenClient() {
 		super( "Password Generator" );
 		
@@ -55,7 +67,11 @@ public class PassGenClient extends JFrame implements ActionListener {
 	 */
 	public void actionPerformed( ActionEvent ae ) {
 		if( ae.getSource() == generate || ae.getSource() == seedField ) {
-			this.outputField.setText( pg.generate( this.seedField.getText(), this.passwordPattern ) );
+		
+			//String seedString, String pattern, int characterSwapFrequency, int capitalizationFrequency, int lengthLimit, 
+			//boolean swappingEnabled, boolean capitalizationEnabled, boolean lengthLimitEnabled
+			this.outputField.setText( pg.generate( this.seedField.getText(), this.currentPasswordPattern, this.swapFrequency, this.capitalizationFrequency,
+													this.currentMaxCharLimit, this.randomlySwappingChars, this.randomCapitalization, this.maxCharLimitFlag ) );
 		}
 		
 		else if( ae.getSource() == randomSeed ) {
@@ -64,24 +80,6 @@ public class PassGenClient extends JFrame implements ActionListener {
 		
 		else if( ae.getSource() == exit ) {
 			System.exit(0);
-		}
-		
-		else if( ae.getSource() == changeFilePath ) {
-			changeDefaultFilePath();
-		}
-		
-		else if( ae.getSource() == changePasswordPattern ) {
-			String newPasswordPattern = JOptionPane.showInputDialog( this, "Enter a new password pattern - current pattern is: " + this.passwordPattern, "Change password pattern", JOptionPane.INFORMATION_MESSAGE );
-			
-			if( newPasswordPattern != null && newPasswordPattern.equals("") == false ) {
-				int confirm = JOptionPane.showConfirmDialog( this, "Are you sure you want \"" + newPasswordPattern + "\" to be your new pattern?", "Confirmation", JOptionPane.INFORMATION_MESSAGE );
-				if( confirm == JOptionPane.YES_OPTION ) {
-					this.passwordPattern = newPasswordPattern;
-					saveSettings();
-					JOptionPane.showMessageDialog( this, "Settings have been saved!", "Settings information", JOptionPane.INFORMATION_MESSAGE );
-				}
-				else JOptionPane.showMessageDialog( this, "Settings not saved!", "Settings information", JOptionPane.INFORMATION_MESSAGE );
-			}
 		}
 		
 		else if( ae.getSource() == aboutProgram ) {
@@ -97,82 +95,54 @@ public class PassGenClient extends JFrame implements ActionListener {
 			HelpDialog hd = new HelpDialog( this );
 		}
 		
-		else if( ae.getSource() == resetFilePath ) {
-			this.filePath = "default";
-			saveSettings();
+		else if( ae.getSource() == editSettings ) {
+			SettingsDialog sd = new SettingsDialog( this );
+			loadSettings();
 		}
 	}
 	
 	/**
-	 * Create a file chooser to change the default wordlist file path
+	 * Restores the default settings and saves them
 	 */
-	private void changeDefaultFilePath() {
-		JFileChooser jfc = new JFileChooser( new File ( this.filePath ) );
-		jfc.setFileFilter( new FileNameExtensionFilter( "Text files", "txt" ) );
-		
-		int returnVal = jfc.showOpenDialog( this );
-    	if( returnVal == JFileChooser.APPROVE_OPTION ) {
-            this.filePath = jfc.getSelectedFile().getPath();
-				saveSettings();
-				loadSettings();
-    	}
-	}
-	
-	/**
-	 * Saves program settings
-	 */
-	private final void saveSettings() {
-		try {
-			File settingsFile = new File( ".settings.ini" );
-			
-			if( settingsFile.exists() )
-				settingsFile.delete();
-			
-			settingsFile.createNewFile();
-			
-			BufferedWriter bw = new BufferedWriter( new FileWriter( settingsFile ) );
-			bw.write( this.passwordPattern + System.lineSeparator() );
-			bw.write( this.filePath );
-			bw.flush();
-		}
-		catch( IOException ioe ) {
-			JOptionPane.showMessageDialog( this, "Error saving settings!", "Error!", JOptionPane.ERROR_MESSAGE );
-		}
+	private void restoreDefaultSettings() {
+		//default settings
+		this.wordlistDirectoryPath = "default";
+		this.currentPasswordPattern = "sn*sns";
+		this.currentMaxCharLimit = 0;
+		this.swapFrequency = 5;
+		this.capitalizationFrequency = 10;
+		this.randomlySwappingChars = true;
+		this.maxCharLimitFlag = false;
+		this.randomCapitalization = true;
 	}
 	
 	/**
 	 * Loads program settings
 	 */
-	private final void loadSettings() {
+	private void loadSettings() {
+		File saveFile = new File( ".settings.ini" );
+		
 		try {
-			File settingsFile = new File( ".settings.ini" );
-			
-			Scanner fileScan = new Scanner( settingsFile );
-			this.passwordPattern = fileScan.nextLine();
-				
-			this.filePath = fileScan.nextLine();
-			if( this.filePath.equalsIgnoreCase( "default" ) ) {
-				this.pg = new PasswordGenerator();
+			//if no save file can be found, load with default settings and save
+			if( saveFile.exists() == false ) {
+				restoreDefaultSettings();
 			}
 			else {
-				try {
-					this.pg = new PasswordGenerator( this.filePath );
-				}
-				catch( FileNotFoundException fnfe ) {
-					JOptionPane.showMessageDialog( this, "Could not locate specified wordlist! Loading default!", "Error loading wordlist!", JOptionPane.ERROR_MESSAGE );
-					this.pg = new PasswordGenerator();
-				}
+				Scanner fileScan = new Scanner( saveFile );
+				this.wordlistDirectoryPath = fileScan.nextLine();
+				this.currentPasswordPattern = fileScan.nextLine();;
+				this.currentMaxCharLimit = Integer.parseInt( fileScan.nextLine() );
+				this.swapFrequency = Integer.parseInt( fileScan.nextLine() );
+				this.capitalizationFrequency = Integer.parseInt( fileScan.nextLine() );
+				this.randomlySwappingChars = Boolean.parseBoolean( fileScan.nextLine() );
+				this.maxCharLimitFlag = Boolean.parseBoolean( fileScan.nextLine() );
+				this.randomCapitalization = Boolean.parseBoolean( fileScan.nextLine() );
+				fileScan.close();
 			}
-			fileScan.close();
-
-			
 		}
 		catch( Exception e ) {
-			this.passwordPattern = "snsns";
-			this.pg = new PasswordGenerator();
-			this.filePath = "default";
-			saveSettings();
-		}	
+			JOptionPane.showMessageDialog( this, "Error loading settings! Staring with default!", "Error!", JOptionPane.ERROR_MESSAGE );
+		}
 	}
 	
 	/**
@@ -222,25 +192,15 @@ public class PassGenClient extends JFrame implements ActionListener {
 		this.howToUse.addActionListener( this );
 		this.aboutProgram = new JMenuItem( "About" );
 		this.aboutProgram.addActionListener( this );
-		this.changePasswordPattern = new JMenuItem( "Change password pattern" );
-		this.changePasswordPattern.addActionListener( this );
 		this.sourceCode = new JMenuItem( "Program source" );
 		this.sourceCode.addActionListener( this );
-		this.changeFilePath = new JMenuItem( "Use custom wordlist" );
-		this.changeFilePath.addActionListener( this );
-		this.resetFilePath = new JMenuItem( "Use default wordlist" );
-		this.resetFilePath.addActionListener( this );
+		this.editSettings = new JMenuItem( "Change Settings" );
+		this.editSettings.setIcon( new ImageIcon( getClass().getResource( "res/gear.png" ) ) );
+		this.editSettings.addActionListener( this );
 		
 		//menus
-		this.changeSettings = new JMenu( "Change Settings" );
-		this.changeSettings.setIcon( new ImageIcon( getClass().getResource( "res/gear.png" ) ) );
-		this.changeSettings.add( changePasswordPattern );
-		this.changeSettings.addSeparator();
-		this.changeSettings.add( changeFilePath );
-		this.changeSettings.add( resetFilePath );
-		
 		this.file = new JMenu( "General Settings" );
-		this.file.add( changeSettings );
+		this.file.add( editSettings );
 		this.file.add( exit );
 		
 		this.about = new JMenu( "About & Help" );
