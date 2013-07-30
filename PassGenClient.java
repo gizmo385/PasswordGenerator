@@ -18,7 +18,7 @@ import java.io.FileWriter;
 public class PassGenClient extends JFrame implements ActionListener {
 	
 	//Frame components
-	private PasswordGenerator pg = new PasswordGenerator();
+	private PasswordGenerator pg;
 	private JTextField seedField, outputField;
 	private JButton randomSeed, generate;
 	private JPanel controls, output;
@@ -114,6 +114,8 @@ public class PassGenClient extends JFrame implements ActionListener {
 		this.randomlySwappingChars = true;
 		this.maxCharLimitFlag = false;
 		this.randomCapitalization = true;
+		
+		this.pg = new PasswordGenerator();
 	}
 	
 	/**
@@ -138,6 +140,9 @@ public class PassGenClient extends JFrame implements ActionListener {
 				this.maxCharLimitFlag = Boolean.parseBoolean( fileScan.nextLine() );
 				this.randomCapitalization = Boolean.parseBoolean( fileScan.nextLine() );
 				fileScan.close();
+				
+				//Load proper wordlist
+				this.pg = this.wordlistDirectoryPath.equals("default") ? new PasswordGenerator() : new PasswordGenerator( this.wordlistDirectoryPath );
 			}
 		}
 		catch( Exception e ) {
