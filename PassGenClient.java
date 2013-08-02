@@ -122,7 +122,14 @@ public class PassGenClient extends JFrame implements ActionListener {
 	 * Loads program settings
 	 */
 	private void loadSettings() {
-		File saveFile = new File( ".settings.ini" );
+		//create path to save location
+		String userHome = System.getProperty("user.home");
+		String fileSep = System.getProperty( "file.separator" );
+		String saveLoc = userHome + fileSep + "PassGen" + fileSep + "data" + fileSep + ".settings.ini"; 
+		
+		//Create file object, create directories if necessary 
+		File saveFile = new File( saveLoc );
+		saveFile.mkdirs();
 		
 		try {
 			//if no save file can be found, load with default settings and save

@@ -40,7 +40,16 @@ public class SettingsDialog extends JDialog implements ActionListener, ChangeLis
 	public SettingsDialog( JFrame parent ) {
 		super( parent, "Settings", true );
 		
-		if( new File( ".settings.ini" ).exists() ) {
+		//create path to save location
+		String userHome = System.getProperty("user.home");
+		String fileSep = System.getProperty( "file.separator" );
+		String saveLoc = userHome + fileSep + "PassGen" + fileSep + "data" + fileSep + ".settings.ini"; 
+		
+		//Create file object, create directories if necessary 
+		File saveFile = new File( saveLoc );
+		saveFile.mkdirs();
+		
+		if( saveFile.exists() ) {
 			loadSettingsFromFile();
 			setUpComponents();
 		}
@@ -103,10 +112,17 @@ public class SettingsDialog extends JDialog implements ActionListener, ChangeLis
 	/**
 	 * Loads the user's settings from the save file
 	 */
-	private void loadSettingsFromFile() {
-		File saveFile = new File( ".settings.ini" );
-		
+	private void loadSettingsFromFile() {		
 		try {
+			//create path to save location
+			String userHome = System.getProperty("user.home");
+			String fileSep = System.getProperty( "file.separator" );
+			String saveLoc = userHome + fileSep + "PassGen" + fileSep + "data" + fileSep + ".settings.ini"; 
+			
+			//Create file object, create directories if necessary 
+			File saveFile = new File( saveLoc );
+			saveFile.mkdirs();
+		
 			//if no save file can be found, load with default settings and save
 			if( saveFile.exists() == false ) {
 				restoreDefaultSettings();
@@ -134,7 +150,14 @@ public class SettingsDialog extends JDialog implements ActionListener, ChangeLis
 	 * Saves the user settings to the save file
 	 */
 	private void saveSettingsToFile() {
-		File saveFile = new File( ".settings.ini" );
+		//create path to save location
+		String userHome = System.getProperty("user.home");
+		String fileSep = System.getProperty( "file.separator" );
+		String saveLoc = userHome + fileSep + "PassGen" + fileSep + "data" + fileSep + ".settings.ini"; 
+		
+		//Create file object, create directories if necessary 
+		File saveFile = new File( saveLoc );
+		saveFile.mkdirs();
 		
 		try {
 			//delete the file if it already exists
