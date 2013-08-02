@@ -22,8 +22,8 @@ Features available in this utility include:
 
 Run the following commands:
 
-	`javac *.java`
-	`javadoc -d /doc -quiet *.java`
-	`jar -cfm PassGen.jar manifest.txt res *.class`
+	javac *.java
+	javadoc -d /doc -quiet *.java
+	jar -cfm PassGen.jar manifest.txt res *.class
 
 - - -
