@@ -20,9 +20,7 @@ Features available in this utility include:
 
 ##Compiling on your own machine:
 
-On a Windows PC, simply run the compile.bat file in the directory with all source files and the manifest.txt file. This will compile the individual classes, generate respective javadoc for each class, and package the class files into an executable jar archive.
-
-On a Mac or Linux computer, run the following commands:
+Run the following commands:
 
 	`javac *.java`
 	`javadoc -d /doc -quiet *.java`
